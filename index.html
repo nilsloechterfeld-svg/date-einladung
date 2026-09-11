@@ -483,8 +483,8 @@
    name:     z. B. "Lena, willst du mit mir auf ein Date gehen?" (leer = Standardfrage)
    dateISO:  null = das Datum, an dem sie die Seite öffnet. Fester Tag: "2026-09-12"
    time:     Uhrzeit fürs Ticket, "" = weglassen
-   memePhotos: eigene Fotos als data:-URI je Meme-Key (siehe MEMES unten),
-               z. B. { noRun: "data:image/jpeg;base64,..." } – dann ersetzt das Foto das Emoji.
+   memePhotos: eigene Fotos je Meme-Key überschreiben die Kätzchen aus memes/,
+               z. B. { noRun: "memes/mein-foto.jpg" } oder als data:-URI.
 ======================================== */
 const CONFIG = {
   name: "",
@@ -551,12 +551,12 @@ const SNACKS = [
 
 /* Meme-Karten: Emoji-Bild + Impact-Text. Eigene Fotos per CONFIG.memePhotos[key]. */
 const MEMES = {
-  noRun:   {emo:"🐈", top:"Wenn du denkst", bottom:"du kannst Nein klicken", under:"Nice try. 😏", bg:"linear-gradient(160deg,#cfe8ff,#7fb3ff 60%,#4a6fd9)"},
-  greyed:  {emo:"🙈", top:"Ich: Du hast die freie Wahl", bottom:"auch ich:", under:"Okay, es ist vielleicht ein bisschen vorentschieden.", bg:"linear-gradient(160deg,#ffe3a3,#ff9a76 60%,#c94f7c)"},
-  bowlFull:{emo:"🥣", top:"Deine Bowl", bottom:"passt in keine Schüssel", under:"Ich hol eine größere. 🫡", bg:"linear-gradient(160deg,#d9ffe3,#7fd9a0 60%,#2f8f6b)"},
-  random:  {emo:"🎲", top:"Das Schicksal", bottom:"hat gesprochen", under:"Kein Zurück mehr. 😌", bg:"linear-gradient(160deg,#ffd6f0,#c98aff 60%,#6d4b9c)"},
-  youPick: {emo:"🫡", top:"Du: entscheide du", bottom:"ich: *panik*", under:"Ich geb mein Bestes. 🙏", bg:"linear-gradient(160deg,#fff0c2,#ffb86b 60%,#e8506f)"},
-  yes:     {emo:"🥹", top:"Sie hat Ja gesagt", bottom:"ich:", under:"Bis heute Abend. 💖", bg:"linear-gradient(160deg,#ffd9a3,#e88aa0 60%,#7a4f8f)"},
+  noRun:   {img:"memes/noRun.jpg", emo:"🐈", top:"Wenn du denkst", bottom:"du kannst Nein klicken", under:"Nice try. 😏", bg:"linear-gradient(160deg,#cfe8ff,#7fb3ff 60%,#4a6fd9)"},
+  greyed:  {img:"memes/greyed.jpg", emo:"🙈", top:"Ich: Du hast die freie Wahl", bottom:"auch ich:", under:"Okay, es ist vielleicht ein bisschen vorentschieden.", bg:"linear-gradient(160deg,#ffe3a3,#ff9a76 60%,#c94f7c)"},
+  bowlFull:{img:"memes/bowlFull.jpg", emo:"🥣", top:"Deine Bowl", bottom:"passt in keine Schüssel", under:"Ich hol eine größere. 🫡", bg:"linear-gradient(160deg,#d9ffe3,#7fd9a0 60%,#2f8f6b)"},
+  random:  {img:"memes/random.jpg", emo:"🎲", top:"Das Schicksal", bottom:"hat gesprochen", under:"Kein Zurück mehr. 😌", bg:"linear-gradient(160deg,#ffd6f0,#c98aff 60%,#6d4b9c)"},
+  youPick: {img:"memes/youPick.jpg", emo:"🫡", top:"Du: entscheide du", bottom:"ich: *panik*", under:"Ich geb mein Bestes. 🙏", bg:"linear-gradient(160deg,#fff0c2,#ffb86b 60%,#e8506f)"},
+  yes:     {img:"memes/yes.jpg", emo:"🥹", top:"Sie hat Ja gesagt", bottom:"ich:", under:"Bis heute Abend. 💖", bg:"linear-gradient(160deg,#ffd9a3,#e88aa0 60%,#7a4f8f)"},
 };
 const memeShown = new Set();
 
@@ -644,10 +644,15 @@ let memeAfter=null;
 function showMeme(key, after){
   const m=MEMES[key]; if (!m || memeShown.has(key)){ if (after) after(); return; }
   memeShown.add(key);
-  const photo=CONFIG.memePhotos[key];
+  const photo=CONFIG.memePhotos[key] || m.img;
   memePic.style.setProperty("--pic-bg", m.bg);
-  memePic.innerHTML = (photo ? `<img src="${esc(photo)}" alt="">` : `<span class="emo" aria-hidden="true">${m.emo}</span>`) +
+  memePic.innerHTML = `<span class="emo" aria-hidden="true">${m.emo}</span>` +
     `<div class="cap t">${esc(m.top)}</div><div class="cap b">${esc(m.bottom)}</div>`;
+  if (photo){
+    const img=new Image(); img.alt=""; img.decoding="async";
+    img.onload=()=>{ memePic.querySelector(".emo")?.remove(); memePic.prepend(img); };
+    img.src=photo;
+  }
   memeUnder.textContent=m.under;
   memeAfter=after||null;
   memeBg.classList.add("show");

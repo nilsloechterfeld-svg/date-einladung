@@ -1,3 +1,4 @@
 shot-*.png
 test-*.html
 .DS_Store
+gen/
