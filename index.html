@@ -300,6 +300,20 @@
   }
   .meme .close{width:100%}
 
+  /* Galerie */
+  .gal-title{margin:22px 0 8px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);text-align:center}
+  .gallery{display:flex;gap:12px;overflow-x:auto;padding:10px 4px 14px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .polaroid{
+    flex:0 0 118px;background:#fff;padding:6px 6px 8px;border:0;cursor:pointer;font:inherit;text-align:center;
+    box-shadow:0 8px 18px -10px rgba(58,31,51,.5);scroll-snap-align:center;transform:rotate(-2.5deg);
+    transition:transform .18s var(--ease-pop);
+  }
+  .polaroid:nth-child(even){transform:rotate(2deg)}
+  .polaroid:hover{transform:rotate(0) scale(1.06);z-index:1}
+  .polaroid:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+  .polaroid img{display:block;width:106px;height:106px;object-fit:cover;background:var(--paper-2)}
+  .polaroid span{display:block;margin-top:6px;font-family:"Anton",Impact,sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
   /* Herzen */
   .hearts{position:fixed;inset:0;pointer-events:none;z-index:70;overflow:hidden}
   .hearts span{position:absolute;font-size:var(--s,20px);left:var(--x);top:var(--y);transform:translate(-50%,-50%);will-change:transform,opacity;color:var(--rose)}
@@ -479,6 +493,8 @@
       </div>
       <div class="ticket" id="ticket"></div>
       <p style="text-align:center;margin-top:16px;font-size:13px">Am besten Screenshot machen und mir schicken. 📸</p>
+      <h3 class="gal-title">Alle Kätzchen von heute</h3>
+      <div class="gallery" id="gallery"></div>
     </section>
 
   </div>
@@ -563,6 +579,12 @@ const MEMES = {
   bowlFull:{img:"memes/bowlFull.jpg", emo:"🥣", top:"Deine Bowl", bottom:"passt in keine Schüssel", under:"Ich hol eine größere. 🫡", bg:"linear-gradient(160deg,#d9ffe3,#7fd9a0 60%,#2f8f6b)"},
   random:  {img:"memes/random.jpg", emo:"🎲", top:"Das Schicksal", bottom:"hat gesprochen", under:"Kein Zurück mehr. 😌", bg:"linear-gradient(160deg,#ffd6f0,#c98aff 60%,#6d4b9c)"},
   youPick: {img:"memes/youPick.jpg", emo:"🫡", top:"Du: entscheide du", bottom:"ich: *panik*", under:"Ich geb mein Bestes. 🙏", bg:"linear-gradient(160deg,#fff0c2,#ffb86b 60%,#e8506f)"},
+  dateOk:  {img:"memes/dateOk.jpg", emo:"📅", top:"Heute?", bottom:"Heute.", under:"Gute Wahl. Also, die einzige. 😌", bg:"linear-gradient(160deg,#fff0c2,#ffb86b 60%,#e8506f)"},
+  bowlPick:{img:"memes/bowlPick.jpg", emo:"🥣", top:"Bowl?", bottom:"Bowl.", under:"Der Koch freut sich. 👨‍🍳", bg:"linear-gradient(160deg,#d9ffe3,#7fd9a0 60%,#2f8f6b)"},
+  autokino:{img:"memes/autokino.jpg", emo:"🚗", top:"Ich fahr", bottom:"du machst die Musik", under:"Deal? 🎶", bg:"linear-gradient(160deg,#cfe8ff,#7fb3ff 60%,#4a6fd9)"},
+  film:    {img:"memes/film.jpg", emo:"🍿", top:"Ich beim Film", bottom:"wenn's spannend wird", under:"Popcorn ist eingeplant. 🍿", bg:"linear-gradient(160deg,#ffd6f0,#c98aff 60%,#6d4b9c)"},
+  drinks:  {img:"memes/drinks.jpg", emo:"🧃", top:"Cheers", bottom:"auf uns", under:"Wird kalt gestellt. 🧊", bg:"linear-gradient(160deg,#ffe3a3,#ff9a76 60%,#c94f7c)"},
+  snacks:  {img:"memes/snacks.jpg", emo:"🍪", top:"Meine Cookies", bottom:"okay, unsere", under:"Ich teile. Ausnahmsweise. 🙄", bg:"linear-gradient(160deg,#e8d5c4,#b08968 60%,#6f4e37)"},
   yes:     {img:"memes/yes.jpg", emo:"🥹", top:"Sie hat Ja gesagt", bottom:"ich:", under:"Bis heute Abend. 💖", bg:"linear-gradient(160deg,#ffd9a3,#e88aa0 60%,#7a4f8f)"},
 };
 const memeShown = new Set();
@@ -648,8 +670,8 @@ function pointOf(e, el){
 /* ---------- Meme-Karten ---------- */
 const memeBg=$("#memeBg"), memePic=$("#memePic"), memeUnder=$("#memeUnder"), memeClose=$("#memeClose");
 let memeAfter=null;
-function showMeme(key, after){
-  const m=MEMES[key]; if (!m || memeShown.has(key)){ if (after) after(); return; }
+function showMeme(key, after, force){
+  const m=MEMES[key]; if (!m || (memeShown.has(key) && !force)){ if (after) after(); return; }
   memeShown.add(key);
   const photo=CONFIG.memePhotos[key] || m.img;
   memePic.style.setProperty("--pic-bg", m.bg);
@@ -772,6 +794,7 @@ yesIntro.addEventListener("click", e=>{
       state.date=new Date(y,m,d);
       const [px,py]=pointOf(e,b); burst(px,py,10);
       setNext(STEPS[1], true);
+      showMeme("dateOk");
     });
     grid.appendChild(b);
   }
@@ -780,7 +803,7 @@ yesIntro.addEventListener("click", e=>{
 function greyed(){ state.greyedClicks++; if (state.greyedClicks===4) showMeme("greyed"); }
 
 /* ---------- Auswahl-Gitter ---------- */
-function buildOptions(containerId, items, key, stepIdx, tipText){
+function buildOptions(containerId, items, key, stepIdx, tipText, memeKey){
   const c=$("#"+containerId);
   items.forEach(it=>{
     const b=document.createElement("button"); b.className="opt"; b.type="button";
@@ -798,13 +821,14 @@ function buildOptions(containerId, items, key, stepIdx, tipText){
       state[key]=it.lbl;
       const [px,py]=pointOf(e,b); burst(px,py,10);
       setNext(STEPS[stepIdx], true);
+      if (memeKey) showMeme(memeKey);
     });
     c.appendChild(b);
   });
 }
-buildOptions("food", FOOD, "food", 2, "Heute leider nicht 🙈");
-buildOptions("activity", ACTIVITY, "activity", 6, "Geht heute nicht 🙊");
-buildOptions("film", FILM, "film", 7, "Läuft heute nicht 🎟️");
+buildOptions("food", FOOD, "food", 2, "Heute leider nicht 🙈", "bowlPick");
+buildOptions("activity", ACTIVITY, "activity", 6, "Geht heute nicht 🙊", "autokino");
+buildOptions("film", FILM, "film", 7, "Läuft heute nicht 🎟️", "film");
 
 /* ---------- Bowl ---------- */
 const bowlFood=$("#bowlFood"), bowlEmpty=$("#bowlEmpty");
@@ -857,7 +881,7 @@ function bowlText(){
 }
 
 /* ---------- Getränke & Snacks: frei, "Entscheide du", "Zufall" ---------- */
-function buildFree(listId, specialId, resultId, items, key, stepIdx, words){
+function buildFree(listId, specialId, resultId, items, key, stepIdx, words, memeKey){
   const list=$("#"+listId), special=$("#"+specialId), result=$("#"+resultId);
   const st=state[key];
   let spinning=false;
@@ -870,6 +894,7 @@ function buildFree(listId, specialId, resultId, items, key, stepIdx, words){
       if (st.items.has(it.lbl)) st.items.delete(it.lbl); else st.items.add(it.lbl);
       if (st.items.has(it.lbl)){ const [px,py]=pointOf(e,b); burst(px,py,6); }
       render();
+      if (st.items.has(it.lbl)) showMeme(memeKey);
     });
     list.appendChild(b); return b;
   });
@@ -926,8 +951,8 @@ function buildFree(listId, specialId, resultId, items, key, stepIdx, words){
   }
   render();
 }
-buildFree("drinks","drinksSpecial","drinksResult", DRINKS, "drinks", 4, {you:"Ich such was aus.", youSub:"Wird kalt sein, versprochen."});
-buildFree("snacks","snacksSpecial","snacksResult", SNACKS, "snacks", 5, {you:"Ich pack was Süßes ein.", youSub:"Mehr als genug."});
+buildFree("drinks","drinksSpecial","drinksResult", DRINKS, "drinks", 4, {you:"Ich such was aus.", youSub:"Wird kalt sein, versprochen."}, "drinks");
+buildFree("snacks","snacksSpecial","snacksResult", SNACKS, "snacks", 5, {you:"Ich pack was Süßes ein.", youSub:"Mehr als genug."}, "snacks");
 function freeText(key, fallback){
   const st=state[key];
   if (st.mode==="you") return fallback;
@@ -950,7 +975,20 @@ $("#yesFinal").addEventListener("click", e=>{
   const [px,py]=pointOf(e,e.currentTarget); burst(px,py,14);
   showMeme("yes", ()=>{ setTimeout(()=>rain(reduced?28:46), 150); go(9); });
 });
+function renderGallery(){
+  const g=$("#gallery"); if (g.childElementCount) return;
+  Object.entries(MEMES).forEach(([key,m])=>{
+    const b=document.createElement("button"); b.className="polaroid"; b.type="button";
+    b.setAttribute("aria-label", m.top+" "+m.bottom);
+    const img=document.createElement("img"); img.alt=""; img.loading="lazy"; img.src=CONFIG.memePhotos[key]||m.img||"";
+    const cap=document.createElement("span"); cap.textContent=m.top;
+    b.append(img,cap);
+    b.addEventListener("click", e=>{ const [x,y]=pointOf(e,b); burst(x,y,6); showMeme(key,null,true); });
+    g.appendChild(b);
+  });
+}
 function renderTicket(){
+  renderGallery();
   const d=state.date||targetDate();
   $("#ticket").innerHTML=`
     <div class="main">
