@@ -555,10 +555,21 @@ const BOWL = [
   {key:"veg", title:"Gemüse & Toppings", hint:"so viel du willst", items:[
     {em:"🍠", lbl:"Süßkartoffel"}, {em:"🥑", lbl:"Avocado"},
     {em:"🌱", lbl:"Frühlingszwiebeln"}, {em:"🫑", lbl:"Paprika"},
+    {em:"🫛", lbl:"Edamame"}, {em:"🥒", lbl:"Gurke"},
+    {em:"🥭", lbl:"Mango"}, {em:"🥕", lbl:"Karotte"},
+    {em:"🌽", lbl:"Mais"}, {em:"🟣", lbl:"Rotkohl"},
+    {em:"🫚", lbl:"eingelegter Ingwer"}, {em:"🌿", lbl:"Koriander"},
   ]},
   {key:"crunch", title:"Crunch", hint:"Nüsse & Co.", items:[
     {em:"🌰", lbl:"Cashewkerne"}, {em:"🥜", lbl:"Erdnüsse"},
     {em:"🫘", lbl:"geröstete Mandeln"}, {em:"✨", lbl:"Sesam"},
+    {em:"🧅", lbl:"Röstzwiebeln"}, {em:"🍘", lbl:"Wonton-Chips"},
+    {em:"🌶️", lbl:"Chili-Flocken"},
+  ]},
+  {key:"sauce", title:"Sauce", hint:"eine oder mehrere", items:[
+    {em:"🍯", lbl:"Teriyaki extra"}, {em:"🔥", lbl:"Sriracha-Mayo"},
+    {em:"🫙", lbl:"Sojasauce"}, {em:"🥜", lbl:"Erdnuss-Sauce"},
+    {em:"🍋", lbl:"Limette"},
   ]},
 ];
 const DRINKS = [
@@ -719,7 +730,7 @@ document.addEventListener("click", e=>{
   if (b.hasAttribute("data-next")){
     burst(x,y,7);
     const next = ()=>go(state.step+1);
-    if (state.step===3 && bowlCount()>=7) showMeme("bowlFull", next); else next();
+    if (state.step===3 && bowlCount()>=9) showMeme("bowlFull", next); else next();
   }
   else go(state.step-1);
 });
@@ -832,7 +843,7 @@ buildOptions("film", FILM, "film", 7, "Läuft heute nicht 🎟️", "film");
 
 /* ---------- Bowl ---------- */
 const bowlFood=$("#bowlFood"), bowlEmpty=$("#bowlEmpty");
-const SPOTS=[[50,50],[30,42],[70,42],[40,68],[62,70],[22,62],[78,64],[50,28],[35,26],[66,28],[50,80]];
+const SPOTS=[[50,50],[30,42],[70,42],[40,68],[62,70],[22,62],[78,64],[50,28],[35,26],[66,28],[50,80],[18,45],[82,45],[28,78],[72,80],[44,36],[58,60],[36,56],[64,44],[50,66],[26,30],[74,30],[40,84],[60,22]];
 function bowlCount(){ let n=0; BOWL.forEach(g=>n+=state.bowl[g.key].size); return n; }
 function renderBowl(){
   bowlFood.innerHTML="";
